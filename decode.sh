@@ -62,5 +62,5 @@ sed -i 's/<blank> //g' ${dumpdir}/hyp.trn
 filt.py -v ${model}/non_lang_syms.txt ${dumpdir}/hyp.trn > ${dumpdir}/hyp.trn.filtered
 spm_decode --model=${model}/bpe.model --input_format=piece < ${dumpdir}/hyp.trn.filtered | sed -e "s/▁/ /g" > ${dumpdir}/hyp.wrd.trn
 
-perl -p -e 's/^(.*)\((.+)\)$/$2 $1/g' ${dumpdir}/hyp.wrd.trn | sort > "${file}.txt"
+perl -p -e 's/^(.*)\(.+(.{17})\)$/$2 $1/g' ${dumpdir}/hyp.wrd.trn | sort > "${file}.txt"
 rm -rf ${workdir}/audio/base/${recid}.wav ${workdir}/*/${recid}
