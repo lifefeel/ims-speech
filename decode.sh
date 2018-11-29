@@ -53,7 +53,8 @@ ${decode_cmd} JOB=1:${nj} ${dumpdir}/log/decode.JOB.log \
 		--minlenratio 0.0 \
 		--ctc-weight 0.5 \
 		--rnnlm ${model}/lm/model.dat \
-		--lm-weight 0.5
+		--lm-weight 0.5 \
+		$(cat ${model}/asr_recog.conf 2>/dev/null || true)
 
 concatjson.py ${dumpdir}/result.*.json > ${dumpdir}/result.json
 json2trn.py ${dumpdir}/result.json ${model}/units.txt ${dumpdir}/ref.trn ${dumpdir}/hyp.trn
