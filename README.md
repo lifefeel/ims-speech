@@ -11,6 +11,7 @@ $ rsync -av /mount/arbeitsdaten/asr-2/denisopl/espnet-pytorch/src/utils/kaldi_io
 ### Usage
 
 ```sh
-$ ims-speech/decode.sh somefile.wav # Transcription will be stored to somefile.wav.txt
+$ echo ims-speech/decode.sh somefile.wav de | /mount/arbeitsdaten41/projekte/asr-2/denisopl/gentoo-sumpfweihe/startprefix
+# Transcription will be stored to somefile.wav.txt
 ```
 

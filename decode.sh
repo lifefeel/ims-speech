@@ -12,7 +12,7 @@ file=$(realpath "$1")
 language=$2
 recid=$(basename "${file}" | md5sum | awk '{print $1}')
 
-basedir=$(dirname $0)
+basedir=$(realpath $(dirname $0))
 segmenter=${basedir}/kaldi-offline-transcriber
 recognizer=${basedir}/espnet
 workdir=${segmenter}/build
