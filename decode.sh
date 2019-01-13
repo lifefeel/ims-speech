@@ -36,6 +36,7 @@ steps/segmentation/detect_speech_activity.sh \
 	--extra-left-context-initial 0 \
 	--extra-right-context-final 0 \
 	--acwt 0.3 \
+	--merge-consecutive-max-dur 10.0 \
 	${workdir}/data/${recid} \
 	/home/users2/denisopl/arbeitsdaten/models/tdnn_stats_asr_sad_1a \
 	${workdir}/mfcc_hires \
