@@ -28,7 +28,7 @@ steps/segmentation/detect_speech_activity.sh \
 	--cmd run.pl \
 	--nj 1 \
 	--convert-data-dir-to-whole false \
-	--graph-opts "--min-silence-duration=0.03 --min-speech-duration=0.3 --max-speech-duration=30.0" \
+	--graph-opts "--min-silence-duration=0.5 --min-speech-duration=1.0 --max-speech-duration=30.0" \
 	--transform-probs-opts "--sil-scale=0.1" \
 	--extra-left-context 79 \
 	--extra-right-context 21 \
@@ -38,15 +38,60 @@ steps/segmentation/detect_speech_activity.sh \
 	--acwt 0.3 \
 	--merge-consecutive-max-dur 10.0 \
 	${workdir}/data/${recid} \
-	/home/users2/denisopl/arbeitsdaten/models/tdnn_stats_asr_sad_1a \
+	$(dirname ${model})/tdnn_stats_asr_sad_1a \
 	${workdir}/mfcc_hires \
 	${workdir}/segmentation \
 	${workdir}/segmentation/${recid}
 
-echo "${recid} ${workdir}/data/${recid}.wav" > ${workdir}/data/${recid}/wav.scp
 cp ${workdir}/segmentation/${recid}_seg/segments ${workdir}/data/${recid}/
 awk '{print $1" text"}' ${workdir}/data/${recid}/segments > ${workdir}/data/${recid}/text
 awk '{print $1" "$1}' ${workdir}/data/${recid}/segments > ${workdir}/data/${recid}/utt2spk
+utils/fix_data_dir.sh ${workdir}/data/${recid}
+
+(
+cd ${basedir}/espnet/tools/kaldi/egs/callhome_diarization/v2
+. path.sh
+
+steps/make_mfcc.sh \
+	--mfcc-config conf/mfcc.conf \
+	--nj 1 \
+	--cmd run.pl \
+	--write-utt2num-frames true \
+	${workdir}/data/${recid} \
+	${workdir}/make_mfcc \
+	${workdir}/mfcc
+
+diarization/nnet3/xvector/extract_xvectors.sh \
+	--cmd run.pl \
+	--nj 1 \
+	--window 1.5 \
+	--period 0.75 \
+	--apply-cmn false \
+	--min-segment 0.5 \
+	$(dirname ${model})/xvector_nnet_1a \
+	${workdir}/data/${recid} \
+	${workdir}/diarization
+
+diarization/nnet3/xvector/score_plda.sh \
+	--cmd run.pl \
+	--nj 1 \
+	$(dirname ${model})/xvector_nnet_1a/xvectors_callhome2 \
+	${workdir}/diarization \
+	${workdir}/diarization
+
+diarization/cluster.sh \
+	--cmd run.pl \
+	--nj 1 \
+	--threshold -0.6 \
+	${workdir}/diarization \
+	${workdir}/diarization
+
+rm ${workdir}/data/${recid}/utt2* ${workdir}/data/${recid}/feats.scp
+awk '{printf("%s-%07d-%07d %s %.3f %.3f\n", $2, $4 * 100, ($4 + $5) * 100, $2, $4, $4 + $5);}' ${workdir}/diarization/rttm > ${workdir}/data/${recid}/segments
+awk '{print $1" "$1}' ${workdir}/data/${recid}/segments > ${workdir}/data/${recid}/utt2spk
+utils/fix_data_dir.sh ${workdir}/data/${recid}
+)
+echo "${recid} ${workdir}/data/${recid}.wav" > ${workdir}/data/${recid}/wav.scp
 cd ${basedir}
 
 # Recognize the speech
