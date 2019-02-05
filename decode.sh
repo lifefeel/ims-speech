@@ -37,6 +37,7 @@ steps/segmentation/detect_speech_activity.sh \
 	--extra-right-context-final 0 \
 	--acwt 0.3 \
 	--merge-consecutive-max-dur 10.0 \
+	--segment_padding 0.1 \
 	${workdir}/data/${recid} \
 	$(dirname ${model})/tdnn_stats_asr_sad_1a \
 	${workdir}/mfcc_hires \
@@ -86,8 +87,12 @@ diarization/cluster.sh \
 	${workdir}/diarization \
 	${workdir}/diarization
 
-rm ${workdir}/data/${recid}/utt2* ${workdir}/data/${recid}/feats.scp
-awk '{printf("%s-%07d-%07d %s %.3f %.3f\n", $2, $4 * 100, ($4 + $5) * 100, $2, $4, $4 + $5);}' ${workdir}/diarization/rttm > ${workdir}/data/${recid}/segments
+rm ${workdir}/data/${recid}/utt2* ${workdir}/data/${recid}/feats.scp ${workdir}/data/${recid}/spk2utt
+e=$(awk '{ e = $4 + $5 } END {print e}' ${workdir}/diarization/rttm)
+awk -v em=$e -v pad=0.3 \
+	'{s = $4 > pad ? $4 - pad : 0; e = $4 + $5 + pad < em ? $4 + $5 + pad : em; printf("%s-%07d-%07d %s %.3f %.3f\n", $2, s * 100, e * 100, $2, s, e);}' \
+	${workdir}/diarization/rttm > ${workdir}/data/${recid}/segments
+awk '{print $1" text"}' ${workdir}/data/${recid}/segments > ${workdir}/data/${recid}/text
 awk '{print $1" "$1}' ${workdir}/data/${recid}/segments > ${workdir}/data/${recid}/utt2spk
 utils/fix_data_dir.sh ${workdir}/data/${recid}
 )
