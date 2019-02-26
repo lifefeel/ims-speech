@@ -100,7 +100,7 @@ echo "${recid} ${workdir}/data/${recid}.wav" > ${workdir}/data/${recid}/wav.scp
 cd ${basedir}
 
 # Recognize the speech
-cd ${basedir}/espnet/egs/multi_${language}/asr1/
+cd ${basedir}/espnet/egs/librispeech/asr1/
 . ./path.sh
 decode_cmd=run.pl
 nj=$(cat <(wc -l ${workdir}/data/${recid}/segments | awk '{print $1}') <(grep -c vendor_id /proc/cpuinfo) | sort -g | head -n1)
@@ -110,25 +110,22 @@ utils/fix_data_dir.sh ${workdir}/data/${recid}
 dumpdir=${workdir}/dump/${recid}
 dump.sh --cmd ${decode_cmd} --nj ${nj} --do_delta false ${workdir}/data/${recid}/feats.scp ${model}/cmvn.ark ${workdir}/exp/${recid} ${dumpdir}
 data2json.sh --feat ${dumpdir}/feats.scp --bpecode ${model}/bpe.model ${workdir}/data/${recid} ${model}/units.txt > ${dumpdir}/data.json
-splitjson.py --parts ${nj} ${dumpdir}/data.json
+asr_recog.py \
+	--ngpu 1 \
+	--batchsize 40 \
+	--backend pytorch \
+	--recog-json ${dumpdir}/data.json \
+	--result-label ${dumpdir}/result.json \
+	--model ${model}/asr/model.dat  \
+	--beam-size 20 \
+	--penalty 0.0 \
+	--maxlenratio 0.0 \
+	--minlenratio 0.0 \
+	--ctc-weight 0.5 \
+	--rnnlm ${model}/lm/model.dat \
+	--lm-weight 0.5 \
+	$(cat ${model}/asr_recog.conf 2>/dev/null || true)
 
-${decode_cmd} JOB=1:${nj} ${dumpdir}/log/decode.JOB.log \
-	asr_recog.py \
-		--ngpu 0 \
-		--backend pytorch \
-		--recog-json ${dumpdir}/split${nj}utt/data.JOB.json \
-		--result-label ${dumpdir}/result.JOB.json \
-		--model ${model}/asr/model.dat  \
-		--beam-size 20 \
-		--penalty 0.0 \
-		--maxlenratio 0.0 \
-		--minlenratio 0.0 \
-		--ctc-weight 0.5 \
-		--rnnlm ${model}/lm/model.dat \
-		--lm-weight 0.5 \
-		$(cat ${model}/asr_recog.conf 2>/dev/null || true)
-
-concatjson.py ${dumpdir}/result.*.json > ${dumpdir}/result.json
 json2trn.py ${dumpdir}/result.json ${model}/units.txt ${dumpdir}/ref.trn ${dumpdir}/hyp.trn
 sed -i 's/<blank> //g' ${dumpdir}/hyp.trn
 filt.py -v ${model}/non_lang_syms.txt ${dumpdir}/hyp.trn > ${dumpdir}/hyp.trn.filtered

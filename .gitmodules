@@ -1,4 +1,4 @@
+
 [submodule "espnet"]
 	path = espnet
-	url = git@clarin06.ims.uni-stuttgart.de:Pavel/espnet.git
-	branch = multi
+	url = https://github.com/espnet/espnet.git
