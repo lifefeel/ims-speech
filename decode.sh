@@ -112,7 +112,7 @@ dump.sh --cmd ${decode_cmd} --nj ${nj} --do_delta false ${workdir}/data/${recid}
 data2json.sh --feat ${dumpdir}/feats.scp --bpecode ${model}/bpe.model ${workdir}/data/${recid} ${model}/units.txt > ${dumpdir}/data.json
 asr_recog.py \
 	--ngpu 1 \
-	--batchsize 40 \
+	--batchsize 60 \
 	--backend pytorch \
 	--recog-json ${dumpdir}/data.json \
 	--result-label ${dumpdir}/result.json \
