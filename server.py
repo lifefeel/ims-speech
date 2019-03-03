@@ -54,8 +54,9 @@ async def decode(websocket, path):
             }
 
             words = l.strip().split(' ')
-            start = float(words[0][-17:-9])
-            end = float(words[0][-8:])
+            start = float(words[0][0:6]) / 100
+            word_duration = (float(words[0][7:15]) / 100 - start) / (len(words) - 1)
+            end = start + word_duration
 
             for word in words[1:]:
                 transcript += ' ' + word
@@ -67,6 +68,9 @@ async def decode(websocket, path):
                 })
 
                 results['results'][0]['alternatives'][0]['timestamps'].append([word, start, end])
+
+                start += word_duration
+                end += word_duration
 
             results['results'][0]['alternatives'][0]['transcript'] = transcript.strip()
 
