@@ -31,7 +31,7 @@ if (( $(echo "$duration > 30.0" |bc -l) )); then
 	cd ${basedir}/espnet/tools/kaldi/egs/aspire/s5
 
 	steps/segmentation/detect_speech_activity.sh \
-		--cmd run.pl \
+		--cmd \./run.pl \
 		--nj 1 \
 		--convert-data-dir-to-whole false \
 		--graph-opts "--min-silence-duration=0.5 --min-speech-duration=1.0 --max-speech-duration=30.0" \
