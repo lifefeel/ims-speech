@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import shutil
@@ -17,6 +18,13 @@ print (fileInDir + fileIn)
 #file = './sample_data_16k/file002_e.wav'
 #file = './sample_data_16k/file003_e.wav'
 
+def save_to_json(data, filename='data.json'):
+    if filename[-4:] != 'json':
+        filename += '.json'
+
+    with open(f'{filename}', 'w', encoding='utf-8') as fw:
+        json.dump(data, fw, indent=4, ensure_ascii=False)
+        
 def createFolder(directory):
     try:
         if not os.path.exists(directory) :
@@ -83,34 +91,19 @@ nj = len(positions)
 for file,start, end in positions:
     print(file,"  ",f'{start} - {end}')
 
-os.chdir('../espnet/egs/korean/asr3')
-vadcommand = "./decoder20200807.sh --backend pytorch --stage 5 --stop-stage 5 --nj " + str(nj)
-print(vadcommand)
-os.system(vadcommand)
-resultfilename='./exp20200807/train_clean20200807_pytorch_train_specaug/decode_test_model.val5.avg.best_decode_lm/hyp.wrd.trn'
-resultfile = open(resultfilename,'r')
-i=0
-result=[]
-while True:
-    line = resultfile.readline()
-    if not line:
-        break
-    words = line.split('(')
-    #print (words[0])
-    result.append(words[0])
-# Come back to Current Dir.
-os.chdir('../../../../ims-speech')
-resultfilenameOut= fileInDir + fileIn + 'Out.txt'
-fp = open(resultfilenameOut,"w",encoding='utf-8')
 
+output_list = []
 for file,start, end in positions:
-    txtout = file + "  " + str(start) + ' - ' + str(end) + '      ' + result[i]
-    #print(file,"  ",f'{start} - {end}', '      ' , result[i])
-    print (txtout)
-    txtout = txtout + '\n'
-    fp.write(txtout)
-    i = i + 1
+    elem = {}
+    elem['file'] = file
+    elem['start'] = str(start)
+    elem['end'] = str(end)
+    
+    output_list.append(elem)
+    
+resultfilenameOut = fileInDir + fileIn + 'Out.json'
+save_to_json(output_list, resultfilenameOut)
 
-fp.close()
+
 
 

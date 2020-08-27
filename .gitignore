@@ -2,6 +2,7 @@ data
 exp
 temp
 sampleOut
+sampleOutOld
 sample_data_16k
 example.sh
 r.*

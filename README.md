@@ -18,6 +18,20 @@ cp ./models/en/conf/mfcc_hires.conf  ./conf
 
 
 ##
+##  Segmentation of about 40 sec from Large File
+##
+#### Shell Command
+```sh
+sh longSeg.sh or
+python longWavSplit.py 001
+```
+* 입력: ./sample_data_16k/eighteen2
+    * 001.wav 
+* 출력: ./sample_data_16k/eighteen2
+    * 001Out.txt ;  segmentation 정보
+    * 001_eDir ; Dir. for Segmented files
+    
+##
 ##  VAD + ASR for each segmentation
 ##
 ### Usage 1
@@ -26,6 +40,11 @@ cp ./models/en/conf/mfcc_hires.conf  ./conf
 sh example.sh or
 python wav_split2.py  file002_e
 ```
+* 출력: ./sampleOut
+    * file001_eOut.txt ;  segmentation 정보
+    * file001_eDir ; Dir. for Segmented files
+    
+    
 ##### vadR1.sh 수행 : speech segmentation  VAD
 ##### ../espnet/egs/korean/asr3/decode.sh 수행: ASR
 ### Changed from Original Version

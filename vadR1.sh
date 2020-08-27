@@ -1,12 +1,18 @@
 #!/bin/bash
 
-. ./path.sh || exit 1;
-. ./cmd.sh || exit 1;
+#. ./path.sh || exit 1;
+#. ./cmd.sh || exit 1;
 
-set -e
-set -u
-set -o pipefail
+#set -e
+#set -u
+#set -o pipefail
 
+##
+MAIN_ROOT=$PWD/espnet
+KALDI_ROOT=$MAIN_ROOT/tools/kaldi
+source $MAIN_ROOT/tools/venv/bin/activate
+export PATH=$MAIN_ROOT/utils:$MAIN_ROOT/espnet/bin:$PATH
+##
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
 PS1="${PS1:-}"
 PYTHONPATH="${PYTHONPATH:-}"
@@ -60,7 +66,9 @@ ffmpeg -i "${file}" -acodec pcm_s16le -ar 16000 -ac 1 ${workdir}/data/${recid}.w
 Fromdate=`date "+%s"`
 echo ' From date=' $Fromdate
 duration=40
-if (( $(echo "$duration > 30.0" |bc -l) )); then
+echo "$duration"
+#if ( $(echo "$duration > 30.0" | bc ) ); then
+#if ($duration > 30.0| bc -l ); then
 	# Segment the audio
 	echo "${recid} sox ${workdir}/data/${recid}.wav -t wav -r 8k - |" > ${workdir}/data/${recid}/wav.scp
 	echo "${recid} ${recid}" > ${workdir}/data/${recid}/utt2spk
@@ -98,11 +106,11 @@ if (( $(echo "$duration > 30.0" |bc -l) )); then
         ##utils/fix_data_dir.sh ${workdir}/data/${recid}
 
 
-else
-	echo "${recid} ${duration}" | \
-		awk '{printf("%s-%08d-%08d %s %.3f %.3f\n", $1, 0, $2 * 100, $1, 0, $2);}' \
-		> ${workdir}/data/${recid}/segments
-fi
+##else
+	##echo "${recid} ${duration}" | \
+		##awk '{printf("%s-%08d-%08d %s %.3f %.3f\n", $1, 0, $2 * 100, $1, 0, $2);}' \
+		##> ${workdir}/data/${recid}/segments
+##fi
 
 	Todate=`date "+%s"`
 	Dur=`echo "($Todate - $Fromdate)" | bc`

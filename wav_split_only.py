@@ -5,7 +5,7 @@ from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
 # file = '/Users/jplee/Dropbox/2020년/2020.05_그랜드챌린지/데이터/sample_data_16k/file003_e.wav'
-datadirIn='./sample_data_16k/'
+datadirIn='./sample_data_16k/eighteen2/'
 datadirOut='../espnet/egs/korean/asr3/downloads/KoreanSpeech/test/test_01/'
 wavtype='.wav'
 #file = './sample_data_16k/file001_e.wav'
@@ -83,33 +83,15 @@ nj = len(positions)
 for file,start, end in positions:
     print(file,"  ",f'{start} - {end}')
 
-os.chdir('../espnet/egs/korean/asr3')
-vadcommand = "./decoder20200807.sh --backend pytorch --stage 5 --stop-stage 5 --nj " + str(nj)
-print(vadcommand)
-os.system(vadcommand)
-resultfilename='./exp20200807/train_clean20200807_pytorch_train_specaug/decode_test_model.val5.avg.best_decode_lm/hyp.wrd.trn'
-resultfile = open(resultfilename,'r')
-i=0
-result=[]
-while True:
-    line = resultfile.readline()
-    if not line:
-        break
-    words = line.split('(')
-    #print (words[0])
-    result.append(words[0])
-# Come back to Current Dir.
-os.chdir('../../../../ims-speech')
+
 resultfilenameOut= fileInDir + fileIn + 'Out.txt'
 fp = open(resultfilenameOut,"w",encoding='utf-8')
 
 for file,start, end in positions:
-    txtout = file + "  " + str(start) + ' - ' + str(end) + '      ' + result[i]
-    #print(file,"  ",f'{start} - {end}', '      ' , result[i])
+    txtout = file + "  " + str(start) + ' - ' + str(end)
     print (txtout)
     txtout = txtout + '\n'
     fp.write(txtout)
-    i = i + 1
 
 fp.close()
 
