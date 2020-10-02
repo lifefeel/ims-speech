@@ -126,6 +126,12 @@ for file in files:
     # Split sub wav file & save to json
     #
     print('\n## Split sub wav file & save to json')
+
+    zip_file = os.path.join(curdir, f'{filename}.zip')
+    if os.path.exists(zip_file):
+        print(f'File exists : {zip_file}')
+        continue
+
     subdir = os.path.join(curdir, filename)  # ~/001
     sub_files = os.listdir(subdir)
     sub_files = sorted(sub_files)
@@ -163,14 +169,13 @@ for file in files:
     # Write to zip file
     #
     print('\n## Write to zip file')
-    zip_file = os.path.join(curdir, f'{filename}.zip')
-    if os.path.exists(zip_file):
-        print(f'File exists : {zip_file}')
-        continue
-    else:
-        print(f'Write to : {zip_file}')
+    print(f'Write to : {zip_file}')
 
+    to_delete_files = []
     with ZipFile(zip_file, 'w') as zip:
+        sub_files = os.listdir(subdir)
+        sub_files = sorted(sub_files)
+        
         for sub_file in sub_files:
             file = os.path.join(subdir, sub_file)
             
@@ -178,8 +183,14 @@ for file in files:
                 continue
 
             zip.write(file, arcname=f'{filename}/{sub_file}')
+            to_delete_files.append(file)
 
-    # break
+    #
+    # Delete files
+    #
+    for file in to_delete_files:
+        os.remove(file)
+
 
 print('Finished!')
 
