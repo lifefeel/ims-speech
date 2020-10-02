@@ -7,7 +7,7 @@ import speech_recognition as sr
 def ffmpeg_extract_wav(input_path, output_path):
     input_stream = ffmpeg.input(input_path)
 
-    output_wav = ffmpeg.output(input_stream.audio, output_path + ".wav", acodec='pcm_s16le', ac=1, ar='16k')
+    output_wav = ffmpeg.output(input_stream.audio, output_path, acodec='pcm_s16le', ac=1, ar='16k')
     output_wav.overwrite_output().run()
 
 
@@ -64,7 +64,6 @@ def trim(input_path, output_path, start=30, end=60):
 
 
 def split_video(video_file, split_info_file, split_seconds=40.0):
-    print('### split_video ###')
     try:
         with open(split_info_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -75,12 +74,14 @@ def split_video(video_file, split_info_file, split_seconds=40.0):
     new_start = None
     new_end = 0.0
     file_idx = 0
+    outputs = []
+    output = {}
 
     dir_path = os.path.dirname(video_file)
     filename, file_extension = os.path.splitext(os.path.basename(video_file))
 
     out_path = os.path.join(dir_path, filename)
-    print(f'  out_path : {out_path}')
+    print(f'out_path : {out_path}')
 
     try:
         os.mkdir(out_path)
@@ -106,16 +107,35 @@ def split_video(video_file, split_info_file, split_seconds=40.0):
 
             out_filename = f'chunk_{file_idx:02d}'
             out_file = os.path.join(out_path, out_filename)
+            out_file_wav = f'{out_file}.wav'
 
-            print(f'  {out_filename}.wav : {new_start:.2f} - {new_end:.2f} ({new_end - new_start:.2f}s)')
-            # trim(video_file, out_file, start=new_start, end=new_end)
+            if not os.path.exists(out_file_wav):
+                trim(video_file, out_file, start=new_start, end=new_end)
+            else:
+                print(f'File exists : {out_file_wav}')
+
+            output['file'] = out_file_wav
+            output['start'] = f'{new_start:.2f}'
+            output['end'] = f'{new_end:.2f}'
+            outputs.append(output)
 
             file_idx += 1
             new_start = None
+            output = {}
 
     if new_start:
         out_filename = f'chunk_{file_idx:02d}'
         out_file = os.path.join(out_path, out_filename)
+        out_file_wav = f'{out_file}.wav'
 
-        print(f'  {out_filename}.wav : {new_start:.2f} - {end} ({end - new_start:.2f}s)')
-        # trim(video_file, out_file, start=new_start, end=end)
+        if not os.path.exists(out_file_wav):
+            trim(video_file, out_file, start=new_start, end=end)
+        else:
+            print(f'File exists : {out_file_wav}')
+
+        output['file'] = out_file_wav
+        output['start'] = f'{new_start:.2f}'
+        output['end'] = f'{new_end:.2f}'
+        outputs.append(output)
+
+    return outputs

@@ -8,7 +8,7 @@ import speech_recognition as sr
 
 from utils import *
 
-dir_path = './sample_data_16k/playlist_xx'
+dir_path = './sample_data_16k/playlist_xx_test'
 
 def split_audio(file, dest_path, use_stt=False):
 
@@ -65,44 +65,62 @@ for file in files:
     if file_extension != '.mp4':
         continue
 
-    print(file)
+    print(f'Start : {file}')
 
     #
     # mp4 to wav
     #
+    print('\n## mp4 to wav')
     in_file = os.path.join(curdir, file)  # ~/001.mp4
     wav_file = os.path.join(curdir, f'{filename}.wav')  # ~/001.wav 
-    ffmpeg_extract_wav(in_file, filename)  # filename + '.wav'
+    
+    if not os.path.exists(wav_file):
+        ffmpeg_extract_wav(in_file, wav_file)
+    else:
+        print(f'File exists : {wav_file}')
 
     #
     # Split wav & save to json
     #
-    dest_path = '/tmp/wav_split'
-    createFolder(dest_path)
-
-    outputs = split_audio(wav_file, dest_path)  # save to temporary path because of not using this time.
-
-    for output in outputs:
-        file = output['file']
-        start = output['start']
-        end = output['end']
-        
-        print(f'{file}\t{start} - {end}')
-        
+    print('\n## Split wav & save to json')
     json_file = os.path.join(curdir, f'{filename}.json')
-    save_to_json(outputs, json_file)
+
+    if not os.path.exists(json_file):
+        dest_path = '/tmp/wav_split'
+        createFolder(dest_path)
+
+        outputs = split_audio(wav_file, dest_path)  # save to temporary path because of not using this time.
+
+        for output in outputs:
+            file = output['file']
+            start = output['start']
+            end = output['end']
+            
+            print(f'{file}\t{start} - {end}')
+        
+        save_to_json(outputs, json_file)
+    else:
+        print(f'File exists : {json_file}')
+
 
     #
     # Split video to 40 seconds
     #
+    print('\n## Split video to 40 seconds')
     video_file = os.path.join(curdir, f'{filename}.mp4')
     
-    split_video(video_file, json_file)
+    video_split_infos = split_video(video_file, json_file)
+    
+    for video_split_info in video_split_infos:
+        print(video_split_info)
 
+    split_info_file = os.path.join(curdir, f'{filename}_split.json')
+    save_to_json(video_split_infos, split_info_file)
 
     #
     # Split sub wav file & save to json
     #
+    print('\n## Split sub wav file & save to json')
     subdir = os.path.join(curdir, filename)  # ~/001
     sub_files = os.listdir(subdir)
     sub_files = sorted(sub_files)
@@ -112,10 +130,15 @@ for file in files:
         if file_extension != '.wav':
             continue
 
-        dest_path = os.path.join(subdir, filename)  # ~/001/chunk_01
+        dest_path = os.path.join(subdir, filename)  # ~/001/chunk_00
+        dest_files = os.listdir(dest_path) if os.path.exists(dest_path) else []
+        
+        if len(dest_files) > 0:
+            continue
+
         createFolder(dest_path)
 
-        inputfile = os.path.join(subdir, sub_file)  # ~/001/chunk_01.wav
+        inputfile = os.path.join(subdir, sub_file)  # ~/001/chunk_00.wav
 
         outputs = split_audio(inputfile, dest_path, use_stt=True)
         
@@ -131,7 +154,7 @@ for file in files:
         save_to_json(outputs, json_file)
 
 
-    break
+    # break
 
 print('Finished!')
 
