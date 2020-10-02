@@ -1,16 +1,8 @@
 #!/bin/bash
 
-#. ./path.sh || exit 1;
-#. ./cmd.sh || exit 1;
-
-#set -e
-#set -u
-#set -o pipefail
-
 ##
 MAIN_ROOT=$PWD/espnet
 KALDI_ROOT=$MAIN_ROOT/tools/kaldi
-source $MAIN_ROOT/tools/venv/bin/activate
 export PATH=$MAIN_ROOT/utils:$MAIN_ROOT/espnet/bin:$PATH
 ##
 LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
@@ -18,13 +10,22 @@ PS1="${PS1:-}"
 PYTHONPATH="${PYTHONPATH:-}"
 
 file=$(realpath "$1")
+
+temp_len=${#2}
+if [ $temp_len -gt 0 ]; then
+	workdir=$(realpath "$2")
+else
+	workdir=./temp
+fi
+
+echo "workdir : ${workdir}"
+
 #language=$2
 recid=$(basename "${file}" | md5sum | awk '{print $1}')
 #recid=local
 
 basedir=$(realpath $(dirname $0))
 #workdir=$(mktemp -d)
-workdir=./temp
 #model=$workdir/models/${language}
 model=./models
 

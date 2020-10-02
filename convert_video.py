@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import shutil
+import tempfile
 from zipfile import ZipFile
 
 from pydub import AudioSegment
@@ -10,16 +11,16 @@ import speech_recognition as sr
 
 from utils import *
 
-dir_path = './sample_data_16k/playlist_xx'
+dir_path = './sample_data_16k/playlist_xx_test'
 
 def split_audio(file, dest_path, use_stt=False):
-
-    vadcommand = "./vadR1.sh  " + file
+    tempdir = tempfile.mkdtemp()
+    vadcommand = f'./vadR1_new.sh {file} {tempdir}'
     print(vadcommand)
     os.system(vadcommand)
 
     # REading segmentation Result
-    Segfile = open("./temp/segmentation/output_seg/segments",'r')
+    Segfile = open(os.path.join(tempdir, "segmentation/output_seg/segments"),'r')
     sound_file = AudioSegment.from_wav(file)
     outputs = []
     
@@ -54,6 +55,7 @@ def split_audio(file, dest_path, use_stt=False):
         i = i+1
         
     Segfile.close()
+    shutil.rmtree(tempdir)
 
     return outputs
 
