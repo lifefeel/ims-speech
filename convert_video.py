@@ -2,13 +2,15 @@ import json
 import os
 import sys
 import shutil
+from zipfile import ZipFile
+
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 import speech_recognition as sr
 
 from utils import *
 
-dir_path = './sample_data_16k/playlist_xx_test'
+dir_path = './sample_data_16k/playlist_xx'
 
 def split_audio(file, dest_path, use_stt=False):
 
@@ -115,7 +117,8 @@ for file in files:
         print(video_split_info)
 
     split_info_file = os.path.join(curdir, f'{filename}_split.json')
-    save_to_json(video_split_infos, split_info_file)
+    if not os.path.exists(split_info_file):
+        save_to_json(video_split_infos, split_info_file)
 
     #
     # Split sub wav file & save to json
@@ -126,14 +129,15 @@ for file in files:
     sub_files = sorted(sub_files)
 
     for sub_file in sub_files:
-        filename, file_extension = os.path.splitext(sub_file)
+        sub_filename, file_extension = os.path.splitext(sub_file)
         if file_extension != '.wav':
             continue
 
-        dest_path = os.path.join(subdir, filename)  # ~/001/chunk_00
+        dest_path = os.path.join(subdir, sub_filename)  # ~/001/chunk_00
         dest_files = os.listdir(dest_path) if os.path.exists(dest_path) else []
         
         if len(dest_files) > 0:
+            print(f'Files esixt in dir : {dest_path}')
             continue
 
         createFolder(dest_path)
@@ -150,9 +154,28 @@ for file in files:
             
             print(f'{file}\t{start} - {end}\t\t{text}')
 
-        json_file = os.path.join(subdir, f'{filename}.json')
+        json_file = os.path.join(subdir, f'{sub_filename}.json')
         save_to_json(outputs, json_file)
 
+    #
+    # Write to zip file
+    #
+    print('\n## Write to zip file')
+    zip_file = os.path.join(curdir, f'{filename}.zip')
+    if os.path.exists(zip_file):
+        print(f'File exists : {zip_file}')
+        continue
+    else:
+        print(f'Write to : {zip_file}')
+
+    with ZipFile(zip_file, 'w') as zip:
+        for sub_file in sub_files:
+            file = os.path.join(subdir, sub_file)
+            
+            if not os.path.isfile(file):
+                continue
+
+            zip.write(file, arcname=f'{filename}/{sub_file}')
 
     # break
 
