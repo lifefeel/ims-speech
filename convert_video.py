@@ -70,6 +70,11 @@ for file in files:
         continue
 
     print(f'Start : {file}')
+    
+    zip_file = os.path.join(curdir, f'{filename}.zip')
+    if os.path.exists(zip_file):
+        print(f'File exists : {zip_file}')
+        continue
 
     #
     # mp4 to wav
@@ -111,6 +116,7 @@ for file in files:
     # Split video to 40 seconds
     #
     print('\n## Split video to 40 seconds')
+
     video_file = os.path.join(curdir, f'{filename}.mp4')
     
     video_split_infos = split_video(video_file, json_file)
@@ -126,11 +132,6 @@ for file in files:
     # Split sub wav file & save to json
     #
     print('\n## Split sub wav file & save to json')
-
-    zip_file = os.path.join(curdir, f'{filename}.zip')
-    if os.path.exists(zip_file):
-        print(f'File exists : {zip_file}')
-        continue
 
     subdir = os.path.join(curdir, filename)  # ~/001
     sub_files = os.listdir(subdir)
