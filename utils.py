@@ -105,7 +105,7 @@ def split_video(video_file, split_info_file, split_seconds=40.0):
 
             new_end = end + (next_start - end) / 2
 
-            out_filename = f'chunk_{file_idx:02d}'
+            out_filename = f'chunk_{file_idx:03d}'
             out_file = os.path.join(out_path, out_filename)
             out_file_wav = f'{out_file}.wav'
 
@@ -124,7 +124,7 @@ def split_video(video_file, split_info_file, split_seconds=40.0):
             output = {}
 
     if new_start:
-        out_filename = f'chunk_{file_idx:02d}'
+        out_filename = f'chunk_{file_idx:03d}'
         out_file = os.path.join(out_path, out_filename)
         out_file_wav = f'{out_file}.wav'
 
